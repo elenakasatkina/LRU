@@ -1,0 +1,11 @@
+Debug/
+
+.vs
+
+fltk.sdf
+
+fltk.opensdf
+fltk.sln
+
+fltk/Debug/
+fltk/fltk.vc*
