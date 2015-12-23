@@ -10,6 +10,10 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Widget.H>
+#include <FL/Fl_Pixmap.H>
+#include <FL/Fl_JPEG_Image.H>
+#include <FL/Fl_Text_Buffer.H>
+#include <FL/Fl_Text_Display.H>
 
 using namespace std;
 
@@ -139,15 +143,24 @@ void on_press_replace_page(Fl_Widget*, void *w) {
 
 	update_pages();
 }
-
-int main() {
-	Fl_Window *window = new Fl_Window(1280, 720, "LRU algorithm");
+void on_press_help(Fl_Widget*, void *w)
+{
+	Fl_Window *windowHelp = new Fl_Window(500, 500, "Help");
+	Fl_Text_Display *displayHelp = new Fl_Text_Display(25, 25, 450, 450, "Help");
+	Fl_Text_Buffer *helpBuff = new Fl_Text_Buffer();
+	displayHelp->buffer(helpBuff);
+	helpBuff->loadfile("help.txt");
+	//displayHelp->show();
+	windowHelp->show();
+}
+void on_press_start(Fl_Widget*, void *w)
+{
+	Fl_Window *window = new Fl_Window(1000, 520, "LRU algorithm");
 	/* draw input area */
 	Fl_Box *inputBox = new Fl_Box(100, 70, 200, 30, "Enter new page name");
 	Fl_Input *nameInput = new Fl_Input(100, 100, 200, 30);
 	Fl_Button *replaceBtn = new Fl_Button(150, 140, 100, 30, "Replace");
 	replaceBtn->callback(on_press_replace_page, (void*)nameInput);
-
 
 	/*define default pages names*/
 	for (int i = 0; i < list->len(); i++) {
@@ -184,7 +197,19 @@ int main() {
 
 	window->show();
 
-	Fl::background(251, 134, 50);
+	Fl::background(97, 140, 158);
+}
+int main() {
+	Fl_Window *windowStart = new Fl_Window(600, 300, "Start Page");
+	Fl_Button *helpBtn = new Fl_Button(100, 140, 100, 30, "Help");
+	Fl::background(152, 93, 162);
+	helpBtn->callback(on_press_help);
+	Fl_Button *startBtn = new Fl_Button(220, 140, 100, 30, "Start");
+	startBtn->callback(on_press_start);
+//	Fl_Box *imageBox = new Fl_Box(5, 5, 790, 640);
+	
+	windowStart->show();
+	
 
 	return Fl::run();
 }
