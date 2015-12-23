@@ -20,12 +20,12 @@ using namespace std;
 class Page {
 private:
 	string name;
-	long date;
+	int count;
 
 public:
 	Page(string name) {
 		this->name = name;
-		setDate();
+		this->count = 0;
 	}
 
 	Page() {
@@ -36,16 +36,16 @@ public:
 		return name;
 	}
 
-	long getDate() {
-		return date;
+	int getCount() {
+		return count;
 	}
 
 	void setName(string name) {
 		this->name = name;
 	}
 
-	void setDate() {
-		this->date = time(0);
+	void upCount() {
+		this->count++;
 	}
 };
 
@@ -64,7 +64,6 @@ public:
 
 	void push(Page page) {
 		if (N == size) {
-			replace(page);
 			return;
 		}
 		a[N++] = page;
@@ -74,18 +73,6 @@ public:
 		return a[index];
 	}
 
-	void replace(Page page) {
-		long min = a[0].getDate();
-		int index = 0;
-		for (int i = 0; i < size; i++) {
-			if (a[i].getDate() < min) {
-				min = a[i].getDate();
-				index = i;
-			}
-		}
-		a[index] = page;
-	}
-
 	bool isEmpty() {
 		return N == 0;
 	}
@@ -93,22 +80,15 @@ public:
 	int len() {
 		return size;
 	}
-
-	void update(int index) {
-		if (N < index || index >= size) {
-			return;
-		}
-		a[index].setDate();
-	}
 };
 
-static ArrayList *list = new ArrayList(5);
+static ArrayList *list = new ArrayList(10);
 static Fl_Box **pagesNameBox;
-static Fl_Box **pagesDateBox;
-static Fl_Button **pagesUseBtn;
+static Fl_Box **pagesCountBox;
+static Fl_Button **pagesUpCountBtn;
 
 /*change labels of name and date Fl_Box*/
-void update_pages() {
+/*void update_pages() {
 	for (int i = 0; i < list->len(); i++) {
 		string pageName = list->get(i).getName();
 		char *charArrayPageName = new char[pageName.size() + 1];
@@ -150,26 +130,22 @@ void on_press_help(Fl_Widget*, void *w)
 	Fl_Text_Buffer *helpBuff = new Fl_Text_Buffer();
 	displayHelp->buffer(helpBuff);
 	helpBuff->loadfile("help.txt");
-	//displayHelp->show();
 	windowHelp->show();
 }
 void on_press_start(Fl_Widget*, void *w)
 {
 	Fl_Window *window = new Fl_Window(1000, 520, "LRU algorithm");
-	/* draw input area */
 	Fl_Box *inputBox = new Fl_Box(100, 70, 200, 30, "Enter new page name");
 	Fl_Input *nameInput = new Fl_Input(100, 100, 200, 30);
 	Fl_Button *replaceBtn = new Fl_Button(150, 140, 100, 30, "Replace");
 	replaceBtn->callback(on_press_replace_page, (void*)nameInput);
 
-	/*define default pages names*/
 	for (int i = 0; i < list->len(); i++) {
 		stringstream ss;
 		ss << i + 1;
 		list->push(Page(ss.str()));
 	}
 
-	/*draw pages*/
 	Fl_Box *pageNameHeader = new Fl_Box(450, 60, 200, 50, "Page name");
 	pageNameHeader->labelfont(FL_BOLD);
 	Fl_Box *pageDateHeader = new Fl_Box(650, 60, 200, 50, "Page date (seconds)");
@@ -198,9 +174,38 @@ void on_press_start(Fl_Widget*, void *w)
 	window->show();
 
 	Fl::background(97, 140, 158);
+}*/
+
+void update() {
+	for (int i = 0; i < list->len(); i++) {
+		string name = list->get(i).getName();
+		char *charArrayPageName = new char[name.size() + 1];
+		charArrayPageName[name.size()] = 0;
+		memcpy(charArrayPageName, name.c_str(), name.size());
+		pagesNameBox[i]->label(charArrayPageName);
+
+		int count = list->get(i).getCount();
+		stringstream ss;
+		ss << count;
+		string pageCount = ss.str();
+		cout << pageCount << "\n";
+		char *charArrayPageCount = new char[pageCount.size() + 1];
+		charArrayPageCount[pageCount.size()] = 0;
+		memcpy(charArrayPageCount, pageCount.c_str(), pageCount.size());
+		pagesCountBox[i]->label(charArrayPageCount);
+	}
 }
+
+void on_press_up_count_page(Fl_Widget*, void *w) {
+	int index = (intptr_t)w;
+
+	list->get(index).upCount();
+
+	update();
+}
+
 int main() {
-	Fl_Window *windowStart = new Fl_Window(600, 300, "Start Page");
+	/*Fl_Window *windowStart = new Fl_Window(600, 300, "Start Page");
 	Fl_Button *helpBtn = new Fl_Button(100, 140, 100, 30, "Help");
 	Fl::background(152, 93, 162);
 	helpBtn->callback(on_press_help);
@@ -208,8 +213,37 @@ int main() {
 	startBtn->callback(on_press_start);
 //	Fl_Box *imageBox = new Fl_Box(5, 5, 790, 640);
 	
-	windowStart->show();
-	
+	windowStart->show();*/
 
+	Fl_Window *main = new Fl_Window(1000, 500, "Main");
+	//int workplace = 5;
+	for (int i = 0; i < list->len(); i++) {
+		stringstream ss;
+		ss << i + 1;
+		list->push(Page(ss.str()));
+	}
+
+	pagesNameBox = new Fl_Box*[list->len()];
+	pagesCountBox = new Fl_Box*[list->len()];
+	pagesUpCountBtn = new Fl_Button*[list->len()];
+
+	Fl_Box *pageNameHeader = new Fl_Box(20, 100, 30, 50, "Name");
+	pageNameHeader->labelfont(FL_BOLD);
+	Fl_Box *pageCountHeader = new Fl_Box(20, 150, 30, 50, "Count");
+	pageCountHeader->labelfont(FL_BOLD);
+
+	int x = 100;
+
+	for (int i = 0; i < list->len(); i++) {
+		*(pagesNameBox + i) = new Fl_Box(x, 100, 10, 50, "");
+		*(pagesCountBox + i) = new Fl_Box(x, 150, 10, 50, "");
+		*(pagesUpCountBtn + i) = new Fl_Button(x, 50, 50, 50, "Up");
+		pagesUpCountBtn[i]->callback(on_press_up_count_page, (void*)(intptr_t)i);
+		x += 70;
+	}
+
+	update();
+
+	main->show();
 	return Fl::run();
 }
